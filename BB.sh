@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # CONFIGURACAO DO WEBHOOK
-URL="https://discord.com"
+URL="https://discord.com/api/webhooks/1474865009459859467/FuON2EHoo1e9LjLPi9cZoeT3IwEO-FSUcW0T2MpSjnvY8MUhvHuGTHc6qq74fi4NF7Ho"
 
 # Funcao para limpar texto e evitar quebra de JSON
 c() { echo "$1" | tr -d '\n\r"' | sed 's/\\/\\\\/g' | cut -c1-400; }
